@@ -1,0 +1,529 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Analyzer // Upside Down Protocol</title>
+    <!-- Load Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Load Inter font -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap" rel="stylesheet">
+    <!-- Font Awesome for subtle icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
+    
+    <style>
+        /* Base Theme: Deep, Dark, and Monochromatic */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0d0a13; /* Very dark background */
+        }
+        
+        /* Subtle Red Glow for key elements */
+        .text-glow {
+            text-shadow: 0 0 2px #dc2626, 0 0 5px #991b1b; 
+        }
+        
+        /* Deep Blue/Red Border Effect */
+        .border-glow {
+            box-shadow: 0 0 6px rgba(220, 38, 38, 0.5), 0 0 10px rgba(30, 64, 175, 0.2); 
+            border-color: #dc2626;
+        }
+        
+        /* Card Background */
+        .card-bg {
+            background-color: #1a1721; 
+        }
+        
+        /* Section Backgrounds for contrast */
+        .section-bg {
+            background-color: #241d30;
+        }
+        
+        /* Pulsing Text Effect for Loading State */
+        .pulse-text {
+            animation: pulse-red 1.5s infinite alternate;
+        }
+        @keyframes pulse-red {
+            0% { color: #dc2626; opacity: 0.6; }
+            100% { color: #f87171; opacity: 1.0; }
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-4">
+
+    <div class="w-full max-w-4xl mx-auto py-12">
+        
+        <!-- Header / Toned-Down Title -->
+        <header class="text-center mb-8">
+            <h1 class="text-4xl md:text-5xl font-extrabold tracking-widest text-red-800 uppercase" style="text-shadow: 0 0 3px #7f1d1d;">
+                :: DATA CONDUIT ACTIVATED ::
+            </h1>
+            <p class="text-lg mt-1 text-blue-700 font-mono">
+                [ RESUME ANALYZER PROTOCOL V 4.0.4 ]
+            </p>
+        </header>
+
+        <!-- Main Card Container -->
+        <main class="card-bg p-6 md:p-10 rounded-xl border border-red-800 border-glow">
+
+            <!-- Uploader Section (Compact) -->
+            <section id="uploader-section" class="mb-6 p-4 border-2 border-dashed border-blue-900 rounded-lg section-bg">
+                <label for="resumeFile" class="block text-xl font-semibold text-red-700 mb-4 tracking-wider font-mono">
+                    > INITIATE TRANSFER
+                </label>
+                <input type="file" id="resumeFile" accept=".pdf,.doc,.docx,.txt" class="block w-full text-sm text-blue-300
+                    file:mr-4 file:py-2 file:px-4
+                    file:rounded-lg file:border-0
+                    file:text-sm file:font-semibold
+                    file:bg-red-950 file:text-red-300
+                    hover:file:bg-red-900 cursor-pointer mb-4
+                "/>
+                <button id="analyzeButton" onclick="analyzeResume()"
+                    class="w-full py-2.5 px-4 bg-red-900 text-white font-bold rounded-lg uppercase tracking-wider
+                           hover:bg-red-800 transition duration-300 disabled:opacity-50 text-lg"
+                >
+                    <i class="fas fa-microchip mr-2"></i> EXECUTE AI ANALYSIS
+                </button>
+            </section>
+
+            <!-- Loading State / Analysis Results -->
+            <section id="result-section">
+                <!-- Loading Message -->
+                <div id="loadingMessage" class="hidden text-center p-8 section-bg rounded-lg border border-blue-800">
+                    <i class="fas fa-spinner fa-spin text-4xl text-blue-500 mb-3"></i>
+                    <p class="text-2xl text-red-500 pulse-text">
+                        ...DECRYPTING DATA STREAM...
+                    </p>
+                    <p class="text-sm text-gray-500 mt-2">
+                        Calling Java ResumeController at http://localhost:8080/api/resume/analyzer
+                    </p>
+                </div>
+
+                <!-- Analysis Output -->
+                <div id="analysisOutput" class="hidden">
+                    <h2 class="text-2xl font-mono text-blue-700 mb-6 border-b-2 border-red-900 pb-2">
+                        > ANALYSIS LOGS
+                    </h2>
+
+                    <!-- Quality Rating -->
+                    <div class="mb-8 p-4 border border-red-900 rounded-lg section-bg">
+                        <h3 class="text-lg text-red-600 mb-2 font-mono">:: QUALITY RATING (1-10) ::</h3>
+                        <p id="ratingDisplay" class="text-5xl font-mono text-red-400 text-glow">--</p>
+                    </div>
+
+                    <!-- Key Skills -->
+                    <div class="mb-8">
+                        <h3 class="text-xl font-semibold text-blue-700 mb-3">
+                            <i class="fas fa-brain mr-2"></i> > KEY SKILLS IDENTIFIED
+                        </h3>
+                        <div id="skillsList" class="flex flex-wrap gap-2 p-3 rounded-lg border border-blue-950 section-bg">
+                            <!-- Skills chips will be injected here -->
+                        </div>
+                    </div>
+
+                    <!-- Improvements -->
+                    <div>
+                        <h3 class="text-xl font-semibold text-red-700 mb-3">
+                            <i class="fas fa-hammer mr-2"></i> > OPTIMIZATION SUGGESTIONS
+                        </h3>
+                        <ul id="improvementsList" class="space-y-3 text-gray-400 list-disc list-inside ml-4 p-3 rounded-lg border border-red-950 section-bg">
+                            <!-- Improvements list will be injected here -->
+                        </ul>
+                    </div>
+                </div>
+
+                <!-- Error Message Container -->
+                <div id="errorMessage" class="hidden text-center p-4 bg-red-950 border border-red-600 rounded-lg text-red-200">
+                    <i class="fas fa-exclamation-triangle mr-2"></i>
+                    <span id="errorText"></span>
+                    <p class="text-xs mt-2 text-red-400">Please ensure your Java service is running and accessible on port 8080.</p>
+                </div>
+            </section>
+            <!-- ATS Analysis Section -->
+
+
+  <section id="ats-section" class="mt-12 card-bg p-6 md:p-10 rounded-xl border border-blue-800 border-glow">
+    <h2 class="text-3xl font-mono text-blue-700 mb-6 text-center tracking-wider">
+        :: ATS COMPLIANCE SCANNER ::
+    </h2>
+
+    <!-- Job Description Input -->
+    <div class="mb-6 p-4 border-2 border-dashed border-green-900 rounded-lg section-bg">
+        <label for="jobDescription" class="block text-xl font-semibold text-green-600 mb-4 tracking-wider font-mono">
+            > INPUT JOB DESCRIPTION
+        </label>
+        <textarea 
+            id="jobDescription" 
+            rows="6"
+            placeholder="Paste the job description here for ATS compatibility analysis..."
+            class="w-full p-4 bg-gray-900 text-gray-300 border border-green-800 rounded-lg focus:border-green-600 focus:ring-1 focus:ring-green-600 resize-none font-mono text-sm"
+        ></textarea>
+        <button 
+            id="atsAnalyzeButton" 
+            onclick="analyzeATS()"
+            class="w-full mt-4 py-2.5 px-4 bg-green-900 text-white font-bold rounded-lg uppercase tracking-wider hover:bg-green-800 transition duration-300 disabled:opacity-50 text-lg"
+        >
+            <i class="fas fa-robot mr-2"></i> SCAN ATS COMPATIBILITY
+        </button>
+    </div>
+
+    <!-- ATS Loading State -->
+    <div id="atsLoadingMessage" class="hidden text-center p-8 section-bg rounded-lg border border-green-800">
+        <i class="fas fa-spinner fa-spin text-4xl text-green-500 mb-3"></i>
+        <p class="text-2xl text-green-500 pulse-text">
+            ...ANALYZING ATS COMPATIBILITY...
+        </p>
+        <p class="text-sm text-gray-500 mt-2">
+            Scanning resume against job description requirements
+        </p>
+    </div>
+
+    <!-- ATS Analysis Results -->
+    <div id="atsAnalysisOutput" class="hidden">
+        <h2 class="text-2xl font-mono text-green-600 mb-6 border-b-2 border-green-900 pb-2">
+            > ATS COMPLIANCE REPORT
+        </h2>
+
+        <!-- ATS Score -->
+        <div class="mb-8 p-6 border border-green-900 rounded-lg section-bg text-center">
+            <h3 class="text-lg text-green-600 mb-2 font-mono">:: ATS COMPATIBILITY SCORE ::</h3>
+            <div id="atsScoreDisplay" class="text-6xl font-mono text-green-400 text-glow my-4">--</div>
+            <div class="w-full bg-gray-800 rounded-full h-4">
+                <div id="atsScoreBar" class="bg-green-600 h-4 rounded-full transition-all duration-1000" style="width: 0%"></div>
+            </div>
+        </div>
+
+        <!-- Summary -->
+        <div class="mb-8 p-4 border border-green-900 rounded-lg section-bg">
+            <h3 class="text-xl font-semibold text-green-600 mb-3 font-mono">
+                <i class="fas fa-file-alt mr-2"></i> > ANALYSIS SUMMARY
+            </h3>
+            <p id="atsSummary" class="text-gray-300 leading-relaxed"></p>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-6">
+            <!-- Matched Keywords -->
+            <div class="p-4 border border-green-900 rounded-lg section-bg">
+                <h3 class="text-lg font-semibold text-green-500 mb-3 font-mono">
+                    <i class="fas fa-check-circle mr-2"></i> MATCHED KEYWORDS
+                </h3>
+                <div id="matchedKeywordsList" class="flex flex-wrap gap-2">
+                    <!-- Matched keywords will be injected here -->
+                </div>
+            </div>
+
+            <!-- Missing Keywords -->
+            <div class="p-4 border border-red-900 rounded-lg section-bg">
+                <h3 class="text-lg font-semibold text-red-500 mb-3 font-mono">
+                    <i class="fas fa-times-circle mr-2"></i> MISSING KEYWORDS
+                </h3>
+                <div id="missingKeywordsList" class="flex flex-wrap gap-2">
+                    <!-- Missing keywords will be injected here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ATS Error Message -->
+    <div id="atsErrorMessage" class="hidden text-center p-4 bg-red-950 border border-red-600 rounded-lg text-red-200 mt-4">
+        <i class="fas fa-exclamation-triangle mr-2"></i>
+        <span id="atsErrorText"></span>
+    </div>
+</section>
+
+        </main>
+
+        <!-- Footer / Signature -->
+        <footer class="text-center mt-10">
+            <p class="text-sm text-gray-500 font-mono">
+                Demonstrating Resume Analyzer UI by
+            </p>
+            <p class="text-xl font-bold text-red-600 text-glow">
+                Prince Gupta
+            </p>
+        </footer>
+
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:8080/api/resume/analyzer'; // Your Java backend endpoint
+        
+        const resumeFile = document.getElementById('resumeFile');
+        const analyzeButton = document.getElementById('analyzeButton');
+        const loadingMessage = document.getElementById('loadingMessage');
+        const analysisOutput = document.getElementById('analysisOutput');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+        const ratingDisplay = document.getElementById('ratingDisplay');
+        const skillsList = document.getElementById('skillsList');
+        const improvementsList = document.getElementById('improvementsList');
+
+        function resetUI() {
+            analysisOutput.classList.add('hidden');
+            loadingMessage.classList.add('hidden');
+            errorMessage.classList.add('hidden');
+            analyzeButton.disabled = false;
+        }
+
+        function displayError(message) {
+            resetUI();
+            errorMessage.classList.remove('hidden');
+            errorText.textContent = message;
+        }
+        // Function to extract JSON from text response
+    function extractJSON(text) {
+    try {
+        // Try to parse the entire response as JSON first
+        return JSON.parse(text);
+    } catch (e) {
+        // If that fails, try to find JSON object in the text
+        const jsonMatch = text.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+            try {
+                return JSON.parse(jsonMatch[0]);
+            } catch (e2) {
+                console.error("Found potential JSON but couldn't parse:", e2);
+            }
+        }
+        throw new Error("Could not extract valid JSON from AI response");
+    }
+}
+
+
+        // Main function to call the Java backend
+        async function analyzeResume() {
+            resetUI();
+            const file = resumeFile.files[0];
+
+            if (!file) {
+                displayError("Error: No file selected. Select a document to analyze.");
+                return;
+            }
+
+            // 1. Set Loading State
+            analyzeButton.disabled = true;
+            loadingMessage.classList.remove('hidden');
+            
+            const formData = new FormData();
+            formData.append('file', file); // 'file' matches the @RequestParam("file") in your Java Controller
+            
+            try {
+                const response = await fetch(API_URL, {
+                    method: 'POST',
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    // Check for 4xx or 5xx status codes
+                    const errorDetails = await response.text();
+                    throw new Error(`Server responded with status ${response.status}. Details: ${errorDetails.substring(0, 100)}...`);
+                }
+
+                const data = await response.json();
+                
+                // Your Java controller returns a Map where the AI's JSON is a STRING under the key 'analysis'.
+                if (!data || !data.analysis) {
+                     throw new Error("Server returned empty or invalid response.");
+                }
+
+                // Parse the JSON string contained within the 'analysis' field
+                  let analysisData;
+               if (typeof data.analysis === 'string') {
+              analysisData = extractJSON(data.analysis);
+               } else {
+              analysisData = data.analysis; // Already an object
+             }
+                
+                // Validate that the essential fields exist
+                if (!analysisData.keySkills || !analysisData.overallQualityRate) {
+                     throw new Error("AI response format is incomplete or missing key fields (skills, rating).");
+                }
+
+                displayResults(analysisData);
+
+            } catch (error) {
+                console.error("Analysis Request Failed:", error);
+                  // Show fallback demo data if server is down
+         if (error.message.includes('Failed to fetch') || error.message.includes('Connection refused')) {
+            displayError("Cannot connect to server. Make sure your Java backend is running on port 8080.");
+        } else {
+            displayError(`Analysis Error: ${error.message}`);
+        }
+    };
+   }
+   // ATS Analysis Elements
+const jobDescription = document.getElementById('jobDescription');
+const atsAnalyzeButton = document.getElementById('atsAnalyzeButton');
+const atsLoadingMessage = document.getElementById('atsLoadingMessage');
+const atsAnalysisOutput = document.getElementById('atsAnalysisOutput');
+const atsErrorMessage = document.getElementById('atsErrorMessage');
+const atsErrorText = document.getElementById('atsErrorText');
+const atsScoreDisplay = document.getElementById('atsScoreDisplay');
+const atsScoreBar = document.getElementById('atsScoreBar');
+const atsSummary = document.getElementById('atsSummary');
+const matchedKeywordsList = document.getElementById('matchedKeywordsList');
+const missingKeywordsList = document.getElementById('missingKeywordsList');
+
+function resetATS() {
+    atsAnalysisOutput.classList.add('hidden');
+    atsLoadingMessage.classList.add('hidden');
+    atsErrorMessage.classList.add('hidden');
+    atsAnalyzeButton.disabled = false;
+}
+
+function displayATSError(message) {
+    resetATS();
+    atsErrorMessage.classList.remove('hidden');
+    atsErrorText.textContent = message;
+}
+
+// ATS Analysis Function
+async function analyzeATS() {
+    resetATS();
+    const file = resumeFile.files[0];
+    const jdText = jobDescription.value.trim();
+
+    if (!file) {
+        displayATSError("Error: No resume file selected.");
+        return;
+    }
+
+    if (!jdText) {
+        displayATSError("Error: Please paste a job description.");
+        return;
+    }
+
+    // Set Loading State
+    atsAnalyzeButton.disabled = true;
+    atsLoadingMessage.classList.remove('hidden');
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('jobDescription', jdText);
+
+    try {
+        const response = await fetch('http://localhost:8080/api/resume/ats-check', {
+            method: 'POST',
+            body: formData,
+        });
+
+        if (!response.ok) {
+            const errorDetails = await response.text();
+            throw new Error(`Server error: ${response.status}. ${errorDetails.substring(0, 100)}`);
+        }
+
+        const data = await response.json();
+
+        if (!data || !data.atsReport) {
+            throw new Error("Server returned empty or invalid ATS report");
+        }
+
+        // Parse the ATS report
+        let atsData;
+        if (typeof data.atsReport === 'string') {
+            atsData = extractJSON(data.atsReport);
+        } else {
+            atsData = data.atsReport;
+        }
+
+        // Validate the structure
+        if (!atsData.atsScore || !atsData.matchedKeywords || !atsData.missingKeywords || !atsData.summary) {
+            throw new Error("ATS report missing required fields");
+        }
+
+        displayATSResults(atsData);
+
+    } catch (error) {
+        console.error("ATS Analysis Failed:", error);
+        displayATSError(`ATS Analysis Error: ${error.message}`);
+    }
+}
+
+function displayATSResults(data) {
+    resetATS();
+
+    // Display ATS Score with animation
+    const score = data.atsScore;
+    atsScoreDisplay.textContent = score + '%';
+    
+    // Animate the progress bar
+    setTimeout(() => {
+        atsScoreBar.style.width = score + '%';
+    }, 100);
+
+    // Display Summary
+    atsSummary.textContent = data.summary;
+
+    // Display Matched Keywords
+    matchedKeywordsList.innerHTML = '';
+    const matchedKeywords = Array.isArray(data.matchedKeywords) ? data.matchedKeywords : 
+                           (typeof data.matchedKeywords === 'string' ? [data.matchedKeywords] : []);
+    
+    matchedKeywords.forEach(keyword => {
+        const chip = document.createElement('span');
+        chip.className = 'px-3 py-1 bg-green-900 text-green-300 text-sm font-medium rounded-full border border-green-700 mb-2';
+        chip.textContent = keyword;
+        matchedKeywordsList.appendChild(chip);
+    });
+
+    // Display Missing Keywords
+    missingKeywordsList.innerHTML = '';
+    const missingKeywords = Array.isArray(data.missingKeywords) ? data.missingKeywords : 
+                           (typeof data.missingKeywords === 'string' ? [data.missingKeywords] : []);
+    
+    missingKeywords.forEach(keyword => {
+        const chip = document.createElement('span');
+        chip.className = 'px-3 py-1 bg-red-900 text-red-300 text-sm font-medium rounded-full border border-red-700 mb-2';
+        chip.textContent = keyword;
+        missingKeywordsList.appendChild(chip);
+    });
+
+    atsAnalysisOutput.classList.remove('hidden');
+}
+
+// Reset ATS UI when file or job description changes
+resumeFile.addEventListener('change', resetATS);
+jobDescription.addEventListener('input', resetATS);
+        
+
+        function displayResults(data) {
+            resetUI();
+            
+            // Display Rating
+            ratingDisplay.textContent = data.overallQualityRate + '/10';
+            
+            // Display Key Skills
+            skillsList.innerHTML = '';
+            const skills = Array.isArray(data.keySkills) ? data.keySkills : (typeof data.keySkills === 'string' ? [data.keySkills] : []);
+            
+            skills.forEach(skill => {
+                const chip = document.createElement('span');
+                // Use deeper blue for chips
+                chip.className = 'px-3 py-1 bg-blue-950 text-blue-400 text-sm font-medium rounded-full border border-blue-800 transition hover:bg-blue-900';
+                chip.textContent = skill;
+                skillsList.appendChild(chip);
+            });
+
+            // Display Improvements
+            improvementsList.innerHTML = '';
+            const improvements = Array.isArray(data.improvements) ? data.improvements : (typeof data.improvements === 'string' ? [data.improvements] : []);
+            
+            improvements.forEach(improvement => {
+                const li = document.createElement('li');
+                li.className = 'text-gray-400';
+                // Use deeper red for FIX label
+                li.innerHTML = `<span class="text-red-500 font-bold mr-2">// FIX //</span> ${improvement}`;
+                improvementsList.appendChild(li);
+            });
+
+            analysisOutput.classList.remove('hidden');
+        }
+
+        // Reset UI when a new file is selected
+        resumeFile.addEventListener('change', resetUI);
+    </script>
+
+</body>
+</html>
